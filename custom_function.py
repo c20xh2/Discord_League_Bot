@@ -4,10 +4,18 @@ from datetime import datetime
 from custom_riot_wrapper import get_data
 from custom_class import matche_record
 from custom_class import summoner_object
-connection = pymysql.connect(host='localhost',user='', password='', db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+
+with open('db_credit.txt', 'r') as db_credit:
+	for line in db_credit:
+		user = line.split(':')[0]
+		password = line.split(':')[1]
+		
+connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 
 def insert_summoner(summoner):
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+
 	with connection.cursor() as cursor:
 		# insert in summoners_active
 		date_added = datetime.strftime(datetime.now(), '%y/%m/%d %H:%M:%S')
@@ -18,6 +26,7 @@ def insert_summoner(summoner):
 	add_summoner_entry(summoner)
 
 def add_summoner_entry(summoner):
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 	with connection.cursor() as cursor:
 		# update entry in summoner_current_stats 
 		sql = "INSERT INTO `summoners_current_stats` (`summoner_id`, `date_new_rank`, `date_new_tier`, `summonerLevel`, `rank`, `leagueName`, `tier`, `hotStreak`, `wins`, `losses`, `summoner_name`, `leaguePoints`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -25,6 +34,8 @@ def add_summoner_entry(summoner):
 	connection.commit()
 
 def check_summoner_exist(summoner_id):
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+
 	with connection.cursor() as cursor:
 		sql = "SELECT `summoner_id` FROM `summoners_active` WHERE `summoner_id` = %s"
 		cursor.execute(sql, summoner_id)
@@ -36,19 +47,22 @@ def check_summoner_exist(summoner_id):
 		return exist_in_db
 
 def logtext(message):
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 	timestamp = datetime.strftime(datetime.now(), '%y/%m/%d %H:%M:%S')
 	channel = str(message.channel)
 	guild = str(message.guild)
 	author = str(message.author)
 	content = str(message.content)
-	print('{} [{}|{}] {}: {}'.format(timestamp, guild, channel, author.split('#')[0], content))
+	if content != '':
+		
+		print('{} [{}|{}] {}: {}'.format(timestamp, guild, channel, author.split('#')[0], content))
 
 
-	with connection.cursor() as cursor:
-		sql = "INSERT INTO `chat_history` (`date`, `channel`, `author`, `content`) VALUES (%s, %s, %s, %s)"
-		cursor.execute(sql, (timestamp, channel, author, content))
-	connection.commit()
+		with connection.cursor() as cursor:
+			sql = "INSERT INTO `chat_history` (`date`, `channel`, `author`, `content`) VALUES (%s, %s, %s, %s)"
+			cursor.execute(sql, (timestamp, channel, author, content))
+		connection.commit()
 
 
 def print_message(timestamp, channel, author, content):
@@ -130,8 +144,9 @@ def get_summoner_stats(summoner_id, summoner_pseudo):
 
 
 def post_latest_game():
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+	
 	results_list = {}
-	connection = pymysql.connect(host='localhost',user='', password='', db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 	with connection.cursor() as cursor:
 		sql = "SELECT `*` FROM `summoners_active` WHERE 1"
@@ -147,10 +162,12 @@ def post_latest_game():
 				cursor.execute(sql2, accountId)
 				results = cursor.fetchall()
 				for each in results:
-					name = str(each['gameId'])
+					part1 = str(each['gameId'])
+					part2 = str(each['champion'])
+					name = ('{}-{}'.format(part1, part2))
 					if name not in results_list:
-						sql3 = "UPDATE `matches` SET `posted` = 1 WHERE gameId = %s"
-						cursor.execute(sql3, each['gameId'])
+						sql3 = "UPDATE `matches` SET `posted` = 1 WHERE gameId = %s AND champion = %s"
+						cursor.execute(sql3, (each['gameId'], each['champion']))
 						connection.commit()
 						results_list[name] = matche_record(summoner_name, each['gameId'],each['champion'],each['timestamp'],each['lane'],each['queue'],each['season'],each['gameMode'],each['accountId'],each['participantId'],each['win'],each['physicalDamageDealt'],each['magicDamageDealt'],each['totalDamageDealt'],each['kills'],each['assists'],each['deaths'],each['totalDamageTaken'],each['totalMinionsKilled'],each['totalPlayerScore'],each['goldEarned'],each['goldSpent'],each['posted'])			
 	connection.close()
@@ -159,8 +176,9 @@ def post_latest_game():
 					
 
 
-def get_champion_name(champion_id):
-		
+def get_champion_name(champion_id):	
+	connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+	
 	with connection.cursor() as cursor:
 		sql = "SELECT `champion_name` FROM `champions_infos` WHERE `champion_id` = %s"
 		cursor.execute(sql, champion_id)
@@ -168,7 +186,6 @@ def get_champion_name(champion_id):
 		return result['champion_name']
 
 def get_queue_name(queue):
-	print(queue)
 	if queue == 400:
 		queue = '5v5 Draft Pick games'
 	elif queue == 420:

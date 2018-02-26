@@ -7,7 +7,12 @@ from custom_function import get_summoner_id
 from custom_function import update_lol_stats
 from custom_class import matche_record
 
-connection = pymysql.connect(host='localhost',user='', password='', db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+with open('db_credit.txt', 'r') as db_credit:
+	for line in db_credit:
+		user = line.split(':')[0]
+		password = line.split(':')[1]
+		
+connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 with connection.cursor() as cursor:
 	sql = "SELECT `*` FROM `summoners_active` WHERE 1"

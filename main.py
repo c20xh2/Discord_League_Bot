@@ -25,17 +25,16 @@ async def my_background_task():
                     results_list = post_latest_game()
                     for matche in results_list:
                         matche = results_list[matche]
-                        
                         champion_name = get_champion_name(matche.champion)
                         queue = get_queue_name(int(matche.queue))
 
                         if int(matche.win) is 1:
                             resultat = 'WIN'
-                            embed = discord.Embed(title='[+] {} WIN:'.format(matche.summoner_name), description="", color=65280)
+                            embed = discord.Embed(title='[+] {} est fucking bon:'.format(matche.summoner_name), description="", color=65280)
 
                         else:
                             resultat = 'LOSSE'
-                            embed = discord.Embed(title='[+] {} LOSSE:'.format(matche.summoner_name), description="", color=16711680)
+                            embed = discord.Embed(title='[+] {} est fucking poche:'.format(matche.summoner_name), description="", color=16711680)
                     
                         embed.add_field(name="Champion:", value= champion_name)
                         embed.add_field(name="Lane:", value= matche.lane)
@@ -48,7 +47,7 @@ async def my_background_task():
 
                         await channel.send(embed = embed)
 
-                    await asyncio.sleep(60) # task runs every 60 seconds
+                    await asyncio.sleep(90) # task runs every 60 seconds
 
 
 async def lol_info(message, summoner_pseudo):
@@ -84,6 +83,11 @@ async def on_message(message):
     logtext(message)
 
 
+with open('discord_api_key.txt', 'r') as apikeyfile:
+	for line in apikeyfile:
+		discord_api_key = line.strip()
+
+
 client.loop.create_task(my_background_task())
 
-client.run('')
+client.run(discord_api_key)

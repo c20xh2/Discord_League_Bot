@@ -9,8 +9,12 @@ from custom_class import matche_record
 
 
 
-connection = pymysql.connect(host='localhost',user='', password='', db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
-
+with open('db_credit.txt', 'r') as db_credit:
+	for line in db_credit:
+		user = line.split(':')[0]
+		password = line.split(':')[1]
+		
+connection = pymysql.connect(host='localhost',user= user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 def get_game_data(gameId):
 	url = 'https://na1.api.riotgames.com/lol/match/v3/matches/{}'.format(gameId)
@@ -24,10 +28,10 @@ def get_recent_matchs(accountId):
 	return data
 
 
-def check_exist_match(gameId):
+def check_exist_match(gameId, champion):
 	with connection.cursor() as cursor:
-		sql = "SELECT `gameId` FROM `matches` WHERE `gameId` = %s"
-		cursor.execute(sql, gameId)
+		sql = "SELECT `gameId` FROM `matches` WHERE `gameId` = %s AND `champion` = %s"
+		cursor.execute(sql, (gameId, champion))
 		result = cursor.fetchone()
 		if result:
 			exist_in_db = True
@@ -61,7 +65,7 @@ with connection.cursor() as cursor:
 			queue = matche['queue']
 			season = matche['season']
 
-			exist_in_db = check_exist_match(gameId) 
+			exist_in_db = check_exist_match(gameId, champion) 
 
 			if exist_in_db is True:
 				pass

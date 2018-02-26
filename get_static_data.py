@@ -1,17 +1,13 @@
 import pymysql.cursors
 from time import sleep
-import requests
+from custom_riot_wrapper import get_data
 
+with open('db_credit.txt', 'r') as keyfile:
+	for line in keyfile:
+		user = line.split(':')[0]
+		password = line.split(':')[1]
 
-def get_data(url):
-
-	x_riot_token = ''
-	headers = {'X-Riot-Token': x_riot_token}
-	r = requests.get(url, headers=headers)
-	data = r.json()
-	return data
-
-connection = pymysql.connect(host='localhost',user='', password='', db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+connection = pymysql.connect(host='localhost',user=user, password=password, db='discord_bot',charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
 url = 'https://na1.api.riotgames.com/lol/static-data/v3/champions?locale=en_US&champListData=info&dataById=false'
 
